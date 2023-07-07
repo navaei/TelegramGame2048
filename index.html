@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Telegram Game 2048</title>
+
+    <link href="style/main.css" rel="stylesheet" type="text/css">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
+    <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone 5+ -->
+    <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x920.png" media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone, retina -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+    <style type="text/css">
+
+        .score .logo {
+            display: none;
+        }
+
+        .stats {
+            display: none;
+            color: #4D4D4D;
+        }
+
+        .updating {
+            position: absolute;
+            text-align: center;
+            width: 100%;
+            color: #88A0A6;
+            margin-top: 1%;
+            display: none;
+        }
+
+        .you_scored {
+            font-size: 180%;
+            margin-top: 14%;
+        }
+
+        .score_num {
+            font-size: 300%;
+            font-weight: bold;
+            margin-top: 2%;
+        }
+
+        .score_share_wrap {
+            display: inline-block;
+            vertical-align: top;
+            position: relative;
+            width: 0;
+        }
+
+        .score_share {
+            font-weight: bold;
+            display: inline-block;
+            vertical-align: top;
+            position: relative;
+            border-radius: 100px;
+            border: 5px solid #FFD45A;
+            background-color: #FEE799;
+            color: #b88700;
+            margin-top: 0.29em;
+            margin-left: 0.29em;
+            padding: 0 0.25em;
+            box-sizing: border-box;
+            line-height: 0.05em;
+            height: 0.7em;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            visibility: hidden;
+            -webkit-transition: -webkit-transform .15s ease-in;
+            transition: transform .15s ease-in;
+            -webkit-transform: scale3d(.7, .7, 1);
+            transform: scale3d(.7, .7, 1);
+            opacity: 0;
+        }
+
+            .score_share.shown {
+                -webkit-transform: scale3d(1, 1, 1);
+                transform: scale3d(1, 1, 1);
+                visibility: visible;
+                opacity: 1;
+            }
+
+        .share_label {
+            font-size: 36%;
+        }
+
+        .score .stats {
+            display: block;
+        }
+
+        .score_coin {
+            margin-top: 0.29em;
+            height: 0.7em;
+            width: 0.7em;
+            display: inline-block;
+            background: url(images/coin_big.png) center center;
+            background-size: 100% 100%;
+            background-position: center center;
+            z-index: 100;
+            margin-left: 1%;
+        }
+
+        .top_table {
+            margin-top: 10%;
+            padding-bottom: 5%;
+        }
+
+        .row {
+            font-size: 120%;
+            color: #4D4D4D;
+            text-align: left;
+            padding: 1% 4%;
+            margin: 1% 6%;
+            border-radius: 2%;
+            border-radius: 0.3em;
+        }
+
+            .row.you {
+                background: #FFFFFF;
+            }
+
+        .row_place {
+            float: left;
+            color: #88A0A6;
+        }
+
+        .row_score {
+            float: right;
+            display: inline-block;
+        }
+
+        .row_name {
+            text-overflow: ellipsis;
+            display: inline-block;
+            width: 65%;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .scores_loading {
+            font-size: 140%;
+            color: #88A0A6;
+        }
+
+        .game-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="heading">
+            <h1 class="title">2048</h1>
+            <div class="scores-container">
+                <div class="score-container">0</div>
+                <div class="best-container">0</div>
+            </div>
+        </div>
+
+        <div id="table_wrap" class="table_wrap opened">
+
+        </div>
+
+        <div class="above-game">
+            <div class="stats">
+                <div class="you_scored">You scored</div>
+                <div class="score_num">
+                    <span id="score_val"></span><div class="score_coin"></div>
+                    <div class="score_share_wrap"><div id="score_share" class="score_share"><span class="share_label">Share</span></div></div>
+                </div>
+            </div>
+            <div id="updating" class="updating">Updating results...</div>
+            <div class="top_table">
+                <div id="scores_table">
+                    <div class="scores_loading">Loading...</div>
+                </div>
+            </div>
+
+            <a class="restart-button">New Game</a>
+        </div>
+
+        <div class="game-container">
+            <div class="game-message">
+                <p></p>
+                <div class="lower">
+                    <a class="keep-playing-button">Keep going</a>
+                    <a class="retry-button">Try again</a>
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+            </div>
+
+            <div class="tile-container">
+
+            </div>
+        </div>
+
+        <!--    <p class="game-explanation">
+          <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+        </p> -->
+        <!--    <p>
+        <strong class="important">Note:</strong> This site is the official version of 2048. You can play it on your phone via <a href="http://git.io/2048">http://git.io/2048.</a> All other apps or sites are derivatives or fakes, and should be used with caution.
+        </p> -->
+        <!--    <p>
+        Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
+        </p> -->
+    </div>
+
+    <script src="js/bind_polyfill.js"></script>
+    <script src="js/classlist_polyfill.js"></script>
+    <script src="js/animframe_polyfill.js"></script>
+    <script src="js/keyboard_input_manager.js"></script>
+    <script src="js/html_actuator.js"></script>
+    <script src="js/grid.js"></script>
+    <script src="js/tile.js"></script>
+    <script src="js/local_storage_manager.js"></script>
+    <script src="js/game_manager.js"></script>
+    <script src="js/application.js"></script>
+</body>
+</html>
